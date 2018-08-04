@@ -314,7 +314,7 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('next');
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('scroll', 'down');
+				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'down'});
 		}
 		else
 		{
@@ -331,7 +331,7 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('previous');
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('scroll', 'up');
+				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'up'});
 		}
 	});
 	
@@ -420,7 +420,7 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('next');
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('scroll', 'down');
+				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'down'});
 		}
 		else
 		{
@@ -437,7 +437,7 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('previous');
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('scroll', 'up');
+				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'up'});
 		}
 	});
 	
