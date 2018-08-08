@@ -544,15 +544,12 @@ rotaryencoder.prototype.destroySecondEncoder = function ()
 rotaryencoder.prototype.executeMethod = function (methodInfo)
 {
 	var self = this;
-	var defer = libQ.defer();
-
+self.logger.info('[Rotary encoder] methodInfo: ' + JSON.stringify(methodInfo));
 	if (methodInfo.method === 'command') {
 		self.executeCommand(methodInfo.cmd);
 	} else if (methodInfo.method === 'socket') {
 		self.emitToSocket(methodInfo.message, methodInfo.value);
 	}
-	
-	return defer.promise;
 };
 
 rotaryencoder.prototype.executeCommand = function (cmd)
