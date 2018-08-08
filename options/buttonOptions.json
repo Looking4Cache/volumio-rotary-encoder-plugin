@@ -13,5 +13,7 @@
   {"label":"Shutdown machine","type": 11},
   {"label":"Reboot machine","type": 12},
   {"label":"Restart Volumio application","type": 13},
-  {"label":"Dump log files","type": 14}
+  {"label":"Dump log files","type": 14},
+  {"label":"UI: Enter","type": 15},
+  {"label":"UI: Back","type": 16}
 ]}

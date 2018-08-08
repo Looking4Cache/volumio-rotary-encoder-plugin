@@ -7,8 +7,8 @@ var execSync = require('child_process').execSync;
 var io = require('socket.io-client');
 var socket = io.connect('http://localhost:3000');
 
-const detentActionType = Object.freeze({ "NO_ACTION": 0, "VOLUME": 1, "PREVNEXT": 2, "SEEK": 3, "SCROLL": 4 });
-const buttonActionType = Object.freeze({ "NO_ACTION": 0, "PLAY": 1, "PAUSE": 2, "PLAYPAUSE": 3, "STOP": 4, "REPEAT": 5, "RANDOM": 6, "CLEARQUEUE": 7, "MUTE": 8, "UNMUTE": 9, "TOGGLEMUTE": 10, "SHUTDOWN": 11, "REBOOT": 12, "RESTARTAPP": 13, "DUMPLOG": 14 });
+const detentActionType = Object.freeze({ "NO_ACTION": 0, "VOLUME": 1, "PREVNEXT": 2, "SEEK": 3, "UI_SCROLL": 4 });
+const buttonActionType = Object.freeze({ "NO_ACTION": 0, "PLAY": 1, "PAUSE": 2, "PLAYPAUSE": 3, "STOP": 4, "REPEAT": 5, "RANDOM": 6, "CLEARQUEUE": 7, "MUTE": 8, "UNMUTE": 9, "TOGGLEMUTE": 10, "SHUTDOWN": 11, "REBOOT": 12, "RESTARTAPP": 13, "DUMPLOG": 14, "UI_ENTER": 15, "UI_BACK": 16 });
 
 var rotaryEncoder = require('onoff-rotary');
 var pressed;
@@ -242,47 +242,53 @@ rotaryencoder.prototype.determineAPICommand = function(buttonAction) {
 	switch(buttonAction)
 	{
 		case buttonActionType.PLAY:
-			return 'play';
+			return {'method':'command', 'cmd':'play'};
 			break;
 		case buttonActionType.PAUSE:
-			return 'pause';
+			return {'method':'command', 'cmd':'pause'};
 			break;
 		case buttonActionType.PLAYPAUSE:
-			return 'toggle';
+			return {'method':'command', 'cmd':'toggle'};
 			break;
 		case buttonActionType.TOGGLEMUTE:
-			return 'volume toggle';
+			return {'method':'command', 'cmd':'volume toggle'};
 			break;
 		case buttonActionType.STOP:
-			return 'stop';
+			return {'method':'command', 'cmd':'stop'};
 			break;
 		case buttonActionType.REPEAT:
-			return 'repeat';
+			return {'method':'command', 'cmd':'repeat'};
 			break;
 		case buttonActionType.RANDOM:
-			return 'random';
+			return {'method':'command', 'cmd':'random'};
 			break;
 		case buttonActionType.CLEARQUEUE:
-			return 'clear';
+			return {'method':'command', 'cmd':'clear'};
 			break;
 		case buttonActionType.MUTE:
-			return 'volume mute';
+			return {'method':'command', 'cmd':'volume mute'};
 			break;
 		case buttonActionType.UNMUTE:
-			return 'volume unmute';
+			return {'method':'command', 'cmd':'volume unmute'};
 			break;
 		case buttonActionType.SHUTDOWN:
-			return 'volume unmute';
+			return {'method':'command', 'cmd':'volume unmute'};
 			break;
 		case buttonActionType.REBOOT:
-			return 'volume unmute';
+			return {'method':'command', 'cmd':'volume unmute'};
 			break;
 		case buttonActionType.RESTARTAPP:
-			return 'vrestart';
+			return {'method':'command', 'cmd':'vrestart'};
 			break;
 		case buttonActionType.DUMPLOG:
-			return 'logdump';
+			return {'method':'command', 'cmd':'logdump'};
 			break;
+		case buttonActionType.UI_ENTER:
+			return {'method':'socket', 'message':'sendBroadcast', 'value': {'designator':'ui', 'value':'enter'}};
+			break;			
+		case buttonActionType.UI_BACK:
+			return {'method':'socket', 'message':'sendBroadcast', 'value': {'designator':'ui', 'value':'back'}};
+			break;			
 	}
 };
 
@@ -313,8 +319,8 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 				self.executeCommand('seek plus');
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('next');
-			else if(self.config.get('first_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'down'});
+			else if(self.config.get('first_encoder_detentActionType') == detentActionType.UI_SCROLL)
+				self.emitToSocket('sendBroadcast', {'designator':'ui', 'value':'scrolldown'});
 		}
 		else
 		{
@@ -330,8 +336,8 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 				self.executeCommand('seek minus');
 			else if(self.config.get('first_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('previous');
-			else if(self.config.get('first_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'up'});
+			else if(self.config.get('first_encoder_detentActionType') == detentActionType.UI_SCROLL)
+				self.emitToSocket('sendBroadcast', {'designator':'ui', 'value':'scrollup'});
 		}
 	});
 	
@@ -350,7 +356,7 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 					if(self.config.get('first_encoder_longPressActionType') != buttonActionType.NO_ACTION)
 					{
 						if(self.config.get('first_encoder_longPressActionType') != buttonActionType.SHUTDOWN && self.config.get('first_encoder_longPressActionType') != buttonActionType.REBOOT)
-							self.executeCommand(self.determineAPICommand(self.config.get('first_encoder_longPressActionType')));
+							self.executeMethod(self.determineAPICommand(self.config.get('first_encoder_longPressActionType')));
 						else
 						{
 							if(self.config.get('first_encoder_longPressActionType') == buttonActionType.SHUTDOWN)
@@ -368,7 +374,7 @@ rotaryencoder.prototype.constructFirstEncoder = function ()
 					if(self.config.get('first_encoder_buttonActionType') != buttonActionType.NO_ACTION)
 					{
 						if(self.config.get('first_encoder_buttonActionType') != buttonActionType.SHUTDOWN && self.config.get('first_encoder_buttonActionType') != buttonActionType.REBOOT)
-							self.executeCommand(self.determineAPICommand(self.config.get('first_encoder_buttonActionType')));
+							self.executeMethod(self.determineAPICommand(self.config.get('first_encoder_buttonActionType')));
 						else
 						{
 							if(self.config.get('first_encoder_buttonActionType') == buttonActionType.SHUTDOWN)
@@ -419,8 +425,8 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 				self.executeCommand('seek plus');
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('next');
-			else if(self.config.get('second_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'down'});
+			else if(self.config.get('second_encoder_detentActionType') == detentActionType.UI_SCROLL)
+				self.emitToSocket('sendBroadcast', {'designator':'ui', 'value':'scrolldown'});
 		}
 		else
 		{
@@ -436,8 +442,8 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 				self.executeCommand('seek minus');
 			else if(self.config.get('second_encoder_detentActionType') == detentActionType.PREVNEXT)
 				self.executeCommand('previous');
-			else if(self.config.get('second_encoder_detentActionType') == detentActionType.SCROLL)
-				self.emitToSocket('sendBroadcast', {'designator':'scroll', 'value':'up'});
+			else if(self.config.get('second_encoder_detentActionType') == detentActionType.UI_SCROLL)
+				self.emitToSocket('sendBroadcast', {'designator':'ui', 'value':'scrollup'});
 		}
 	});
 	
@@ -456,7 +462,7 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 					if(self.config.get('second_encoder_longPressActionType') != buttonActionType.NO_ACTION)
 					{
 						if(self.config.get('second_encoder_longPressActionType') != buttonActionType.SHUTDOWN && self.config.get('second_encoder_longPressActionType') != buttonActionType.REBOOT)
-							self.executeCommand(self.determineAPICommand(self.config.get('second_encoder_longPressActionType')));
+							self.executeMethod(self.determineAPICommand(self.config.get('second_encoder_longPressActionType')));
 						else
 						{
 							if(self.config.get('second_encoder_longPressActionType') == buttonActionType.SHUTDOWN)
@@ -474,7 +480,7 @@ rotaryencoder.prototype.constructSecondEncoder = function ()
 					if(self.config.get('second_encoder_buttonActionType') != buttonActionType.NO_ACTION)
 					{
 						if(self.config.get('second_encoder_buttonActionType') != buttonActionType.SHUTDOWN && self.config.get('second_encoder_buttonActionType') != buttonActionType.REBOOT)
-							self.executeCommand(self.determineAPICommand(self.config.get('second_encoder_buttonActionType')));
+							self.executeMethod(self.determineAPICommand(self.config.get('second_encoder_buttonActionType')));
 						else
 						{
 							if(self.config.get('second_encoder_buttonActionType') == buttonActionType.SHUTDOWN)
@@ -533,6 +539,15 @@ rotaryencoder.prototype.destroySecondEncoder = function ()
 	}
 	
 	return defer.promise;
+};
+
+rotaryencoder.prototype.executeMethod = function (methodInfo)
+{
+	if (methodInfo.method === 'command') {
+		self.executeCommand(methodInfo.cmd);
+	} else if (methodInfo.method === 'socket') {
+		self.emitToSocket(methodInfo.message, methodInfo.value);
+	}
 };
 
 rotaryencoder.prototype.executeCommand = function (cmd)
